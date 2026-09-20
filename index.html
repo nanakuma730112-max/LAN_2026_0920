@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LANとインターネット機器 ― 通信のしくみ実習</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<header class="masthead">
+  <div class="masthead-title">
+    <h1>LANとインターネット機器</h1>
+    <p>配線図の中でパケットを動かし、つながらない原因を見つけて直す</p>
+  </div>
+  <div class="masthead-meta">
+    <span class="status-chip" id="overall-status">未開通</span>
+    <button type="button" class="btn-ghost" id="btn-reset">初期状態に戻す</button>
+  </div>
+</header>
+
+<main class="workspace">
+
+  <!-- 左：課題ステージ -->
+  <section class="panel stages" aria-labelledby="stages-h">
+    <h2 id="stages-h">実習ステージ</h2>
+
+    <ol class="stage-list">
+      <li class="stage" id="stage-1" data-state="todo">
+        <div class="stage-head">
+          <span class="stage-mark" aria-hidden="true"></span>
+          <h3>1　同じLANの中で送る</h3>
+        </div>
+        <p class="stage-task">PC-A から PC-B（192.168.1.20）へ送信する。</p>
+        <p class="stage-insight" hidden>同じネットワークの中なら、ルータを通らずスイッチがMACアドレスを見て相手に直接届けます。IPアドレスのネットワーク番号が同じ＝「同じ部屋の中」です。</p>
+      </li>
+      <li class="stage" id="stage-2" data-state="todo">
+        <div class="stage-head">
+          <span class="stage-mark" aria-hidden="true"></span>
+          <h3>2　LANの外へ出る</h3>
+        </div>
+        <p class="stage-task">PC-A から Web Server（192.168.2.100）へ送信する。PC-Aから出発できない原因を、プロパティを開いて探す。</p>
+        <p class="stage-insight" hidden>自分のネットワーク以外が宛先のとき、PCは「出口のルータ」にパケットを渡します。その出口の住所がデフォルトゲートウェイです。未設定だと、PCはパケットを送り出すことすらできません。</p>
+      </li>
+      <li class="stage" id="stage-3" data-state="todo">
+        <div class="stage-head">
+          <span class="stage-mark" aria-hidden="true"></span>
+          <h3>3　ルータの先で止まる</h3>
+        </div>
+        <p class="stage-task">Router-2 でパケットが落ちる原因を、機器のアドレス一覧から見つけて直す。</p>
+        <p class="stage-insight" hidden>ルータは「自分のLAN側が担当しているネットワーク番号」と宛先を照らし合わせて引き渡します。Router-2のLAN側が192.168.1.0の設定のままでは、192.168.2.100宛のパケットは渡す先が無く破棄されます。</p>
+      </li>
+    </ol>
+
+    <div class="addr-table">
+      <h3>機器アドレス一覧</h3>
+      <table id="addr-table">
+        <thead><tr><th>機器</th><th>インタフェース</th><th>IPアドレス</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="hint">ネットワーク番号（前半3つの数字）がそろっているか、見比べてみましょう。</p>
+    </div>
+  </section>
+
+  <!-- 中央：配線図 -->
+  <section class="panel diagram" aria-labelledby="diagram-h">
+    <div class="diagram-head">
+      <h2 id="diagram-h">配線図</h2>
+      <div class="send-controls">
+        <span class="send-label">PC-A から送信</span>
+        <button type="button" class="btn-send" data-target="pc-b">PC-B へ<em>192.168.1.20</em></button>
+        <button type="button" class="btn-send" data-target="server">Web Server へ<em>192.168.2.100</em></button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <svg id="topology" viewBox="0 0 900 430" role="img" aria-label="LAN1とLAN2をルータでつないだネットワーク配線図">
+        <g id="zones"></g>
+        <g id="links"></g>
+        <g id="nodes"></g>
+        <g id="packet-layer"></g>
+      </svg>
+    </div>
+
+    <div class="packet-readout" id="packet-readout" hidden>
+      <div class="readout-item"><span>宛先IPアドレス</span><b id="ro-dip">―</b></div>
+      <div class="readout-item"><span>宛先MACアドレス</span><b id="ro-dmac">―</b></div>
+      <div class="readout-item"><span>現在地</span><b id="ro-at">―</b></div>
+    </div>
+  </section>
+
+  <!-- 右：プロパティ -->
+  <section class="panel props" aria-labelledby="props-h">
+    <h2 id="props-h">機器のプロパティ</h2>
+    <p class="props-guide" id="props-guide">配線図の機器をクリックすると設定が開きます。</p>
+    <div id="props-body"></div>
+  </section>
+
+</main>
+
+<!-- 通信ログ -->
+<section class="panel console" aria-labelledby="console-h">
+  <div class="console-head">
+    <h2 id="console-h">通信ログ</h2>
+    <button type="button" class="btn-ghost" id="btn-clear-log">消去</button>
+  </div>
+  <ol class="log" id="log" aria-live="polite"></ol>
+</section>
+
+<!-- 振り返り -->
+<section class="panel review" aria-labelledby="review-h">
+  <h2 id="review-h">ふりかえり</h2>
+  <p class="review-lead">開通させて終わりにせず、何が起きていたのかを自分のことばにしてみましょう。</p>
+
+  <form id="quiz-form" class="quiz">
+    <fieldset class="q">
+      <legend>Q1　同じLANの中の通信で、スイッチが見ているのはどれですか。</legend>
+      <label><input type="radio" name="q1" value="a">IPアドレス</label>
+      <label><input type="radio" name="q1" value="b">MACアドレス</label>
+      <label><input type="radio" name="q1" value="c">デフォルトゲートウェイ</label>
+      <p class="q-feedback" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q">
+      <legend>Q2　デフォルトゲートウェイが空欄だと、なぜ通信できないのですか。</legend>
+      <label><input type="radio" name="q2" value="a">宛先のMACアドレスが分からなくなるから</label>
+      <label><input type="radio" name="q2" value="b">自分のネットワーク外へのパケットを渡す出口が分からないから</label>
+      <label><input type="radio" name="q2" value="c">サブネットマスクが計算できなくなるから</label>
+      <p class="q-feedback" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q">
+      <legend>Q3　Router-2のLAN側IPが192.168.1.254のままだと、何が起こりますか。</legend>
+      <label><input type="radio" name="q3" value="a">LAN2（192.168.2.0）の担当になっておらず、宛先へ引き渡せない</label>
+      <label><input type="radio" name="q3" value="b">WAN回線の速度が落ちる</label>
+      <label><input type="radio" name="q3" value="c">Web ServerのMACアドレスが変わる</label>
+      <p class="q-feedback" aria-live="polite"></p>
+    </fieldset>
+
+    <label class="q-free">
+      <span>Q4　今日直した2か所の設定を、後輩に説明するつもりで書きましょう。</span>
+      <textarea id="q4" rows="4" placeholder="例：PC-Aには……、Router-2では……"></textarea>
+    </label>
+
+    <label class="q-free">
+      <span>Q5　学校のPCがインターネットにつながらないとき、この実習をもとにまず何を確認しますか。</span>
+      <textarea id="q5" rows="3"></textarea>
+    </label>
+
+    <div class="review-actions">
+      <button type="button" class="btn-solid" id="btn-check">解答を確認する</button>
+      <button type="button" class="btn-ghost" id="btn-export">記録を保存する</button>
+    </div>
+  </form>
+</section>
+
+<footer class="colophon">情報科 授業用シミュレータ　―　実際の機器では経路情報の設定など、ここでは省いた手順もあります。</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
