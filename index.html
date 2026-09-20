@@ -6,7 +6,7 @@
 <title>LANとインターネット機器 ― 通信のしくみ実習</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,50 +18,68 @@
   </div>
   <div class="masthead-meta">
     <span class="status-chip" id="overall-status">未開通</span>
-    <button type="button" class="btn-ghost" id="btn-reset">初期状態に戻す</button>
+    <button type="button" class="btn-ghost" id="btn-reset">はじめからやり直す</button>
   </div>
 </header>
 
 <main class="workspace">
 
-  <!-- 左：課題ステージ -->
-  <section class="panel stages" aria-labelledby="stages-h">
-    <h2 id="stages-h">実習ステージ</h2>
+  <!-- 左：進めかた -->
+  <section class="panel guide" aria-labelledby="guide-h">
+    <h2 id="guide-h">進めかた</h2>
 
-    <ol class="stage-list">
-      <li class="stage" id="stage-1" data-state="todo">
-        <div class="stage-head">
+    <div class="progress">
+      <div class="progress-bar"><span id="progress-fill"></span></div>
+      <p class="progress-text" id="progress-text">3つのうち 0 つ達成</p>
+    </div>
+
+    <ol class="stage-list" id="stage-list">
+
+      <li class="stage" id="stage-1" data-state="todo" data-target="pc-b">
+        <button type="button" class="stage-head" aria-expanded="true" aria-controls="stage-body-1">
           <span class="stage-mark" aria-hidden="true"></span>
-          <h3>1　同じLANの中で送る</h3>
+          <span class="stage-title">1　同じLANの中で送ってみる</span>
+        </button>
+        <div class="stage-body" id="stage-body-1">
+          <p class="stage-task">まずはうまくいく例から。PC-A のとなりの席、PC-B に送ってみましょう。</p>
+          <button type="button" class="btn-send" data-target="pc-b">PC-B へ送信<em>192.168.1.20</em></button>
+          <p class="stage-insight" hidden>同じLANの中なら、ルータを通らずスイッチがMACアドレスを見て相手に直接届けます。IPアドレスのネットワーク番号が同じ＝「同じ教室の中」です。</p>
         </div>
-        <p class="stage-task">PC-A から PC-B（192.168.1.20）へ送信する。</p>
-        <p class="stage-insight" hidden>同じネットワークの中なら、ルータを通らずスイッチがMACアドレスを見て相手に直接届けます。IPアドレスのネットワーク番号が同じ＝「同じ部屋の中」です。</p>
       </li>
-      <li class="stage" id="stage-2" data-state="todo">
-        <div class="stage-head">
+
+      <li class="stage" id="stage-2" data-state="todo" data-target="server">
+        <button type="button" class="stage-head" aria-expanded="false" aria-controls="stage-body-2">
           <span class="stage-mark" aria-hidden="true"></span>
-          <h3>2　LANの外へ出る</h3>
+          <span class="stage-title">2　LANの外へ出してみる</span>
+        </button>
+        <div class="stage-body" id="stage-body-2" hidden>
+          <p class="stage-task">今度は外のWebサーバへ。送れなかったら、PC-A の設定のどこが空いているか確かめましょう。</p>
+          <button type="button" class="btn-send" data-target="server">Web Server へ送信<em>192.168.2.100</em></button>
+          <p class="stage-insight" hidden>自分のLAN以外が宛先のとき、PCは「出口のルータ」にパケットを渡します。その出口の住所がデフォルトゲートウェイです。未設定だと、PCはパケットを送り出すことすらできません。</p>
         </div>
-        <p class="stage-task">PC-A から Web Server（192.168.2.100）へ送信する。PC-Aから出発できない原因を、プロパティを開いて探す。</p>
-        <p class="stage-insight" hidden>自分のネットワーク以外が宛先のとき、PCは「出口のルータ」にパケットを渡します。その出口の住所がデフォルトゲートウェイです。未設定だと、PCはパケットを送り出すことすらできません。</p>
       </li>
-      <li class="stage" id="stage-3" data-state="todo">
-        <div class="stage-head">
+
+      <li class="stage" id="stage-3" data-state="todo" data-target="server">
+        <button type="button" class="stage-head" aria-expanded="false" aria-controls="stage-body-3">
           <span class="stage-mark" aria-hidden="true"></span>
-          <h3>3　ルータの先で止まる</h3>
+          <span class="stage-title">3　ルータの先で止まる理由を探す</span>
+        </button>
+        <div class="stage-body" id="stage-body-3" hidden>
+          <p class="stage-task">パケットが Router-2 で消えています。左下のアドレス一覧で、赤くなっている行を見つけましょう。</p>
+          <button type="button" class="btn-send" data-target="server">Web Server へ送信<em>192.168.2.100</em></button>
+          <p class="stage-insight" hidden>ルータは「自分のLAN側が担当しているネットワーク番号」と宛先を照らし合わせて引き渡します。Router-2のLAN側が192.168.1.0のままでは、192.168.2.100あてのパケットは渡す先が無く破棄されます。</p>
         </div>
-        <p class="stage-task">Router-2 でパケットが落ちる原因を、機器のアドレス一覧から見つけて直す。</p>
-        <p class="stage-insight" hidden>ルータは「自分のLAN側が担当しているネットワーク番号」と宛先を照らし合わせて引き渡します。Router-2のLAN側が192.168.1.0の設定のままでは、192.168.2.100宛のパケットは渡す先が無く破棄されます。</p>
       </li>
+
     </ol>
 
     <div class="addr-table">
       <h3>機器アドレス一覧</h3>
       <table id="addr-table">
-        <thead><tr><th>機器</th><th>インタフェース</th><th>IPアドレス</th></tr></thead>
+        <thead><tr><th>機器</th><th>場所</th><th>IPアドレス</th></tr></thead>
         <tbody></tbody>
       </table>
-      <p class="hint">ネットワーク番号（前半3つの数字）がそろっているか、見比べてみましょう。</p>
+      <p class="hint">同じLANなのにネットワーク番号（前半3つの数字）がそろっていない行は、赤く表示されます。</p>
     </div>
   </section>
 
@@ -69,10 +87,11 @@
   <section class="panel diagram" aria-labelledby="diagram-h">
     <div class="diagram-head">
       <h2 id="diagram-h">配線図</h2>
-      <div class="send-controls">
-        <span class="send-label">PC-A から送信</span>
-        <button type="button" class="btn-send" data-target="pc-b">PC-B へ<em>192.168.1.20</em></button>
-        <button type="button" class="btn-send" data-target="server">Web Server へ<em>192.168.2.100</em></button>
+      <div class="playback" role="group" aria-label="再生コントロール">
+        <button type="button" class="btn-mini" id="btn-pause" disabled>一時停止</button>
+        <button type="button" class="btn-mini" id="btn-next" hidden>次へ進む</button>
+        <button type="button" class="btn-mini" id="btn-replay" disabled>もう一度再生</button>
+        <label class="toggle"><input type="checkbox" id="chk-step"><span>1つずつ進める</span></label>
       </div>
     </div>
 
@@ -85,17 +104,23 @@
       </svg>
     </div>
 
+    <div class="callout" id="callout" hidden>
+      <p class="callout-title" id="callout-title"></p>
+      <p class="callout-text" id="callout-text"></p>
+      <button type="button" class="btn-solid" id="callout-action" hidden></button>
+    </div>
+
     <div class="packet-readout" id="packet-readout" hidden>
-      <div class="readout-item"><span>宛先IPアドレス</span><b id="ro-dip">―</b></div>
-      <div class="readout-item"><span>宛先MACアドレス</span><b id="ro-dmac">―</b></div>
+      <div class="readout-item"><span>いま運んでいるパケットの宛先IP</span><b id="ro-dip">―</b></div>
+      <div class="readout-item"><span>次に渡す相手のMAC</span><b id="ro-dmac">―</b></div>
       <div class="readout-item"><span>現在地</span><b id="ro-at">―</b></div>
     </div>
   </section>
 
   <!-- 右：プロパティ -->
   <section class="panel props" aria-labelledby="props-h">
-    <h2 id="props-h">機器のプロパティ</h2>
-    <p class="props-guide" id="props-guide">配線図の機器をクリックすると設定が開きます。</p>
+    <h2 id="props-h">機器の設定</h2>
+    <p class="props-guide" id="props-guide">配線図の機器をタップすると、その機器の設定が開きます。</p>
     <div id="props-body"></div>
   </section>
 
@@ -104,9 +129,10 @@
 <!-- 通信ログ -->
 <section class="panel console" aria-labelledby="console-h">
   <div class="console-head">
-    <h2 id="console-h">通信ログ</h2>
+    <h2 id="console-h">通信のようす</h2>
     <button type="button" class="btn-ghost" id="btn-clear-log">消去</button>
   </div>
+  <p class="console-hint">青い下線の言葉はタップすると意味を確認できます。</p>
   <ol class="log" id="log" aria-live="polite"></ol>
 </section>
 
@@ -118,25 +144,25 @@
   <form id="quiz-form" class="quiz">
     <fieldset class="q">
       <legend>Q1　同じLANの中の通信で、スイッチが見ているのはどれですか。</legend>
-      <label><input type="radio" name="q1" value="a">IPアドレス</label>
-      <label><input type="radio" name="q1" value="b">MACアドレス</label>
-      <label><input type="radio" name="q1" value="c">デフォルトゲートウェイ</label>
+      <label><input type="radio" name="q1" value="a"><span>IPアドレス</span></label>
+      <label><input type="radio" name="q1" value="b"><span>MACアドレス</span></label>
+      <label><input type="radio" name="q1" value="c"><span>デフォルトゲートウェイ</span></label>
       <p class="q-feedback" aria-live="polite"></p>
     </fieldset>
 
     <fieldset class="q">
       <legend>Q2　デフォルトゲートウェイが空欄だと、なぜ通信できないのですか。</legend>
-      <label><input type="radio" name="q2" value="a">宛先のMACアドレスが分からなくなるから</label>
-      <label><input type="radio" name="q2" value="b">自分のネットワーク外へのパケットを渡す出口が分からないから</label>
-      <label><input type="radio" name="q2" value="c">サブネットマスクが計算できなくなるから</label>
+      <label><input type="radio" name="q2" value="a"><span>宛先のMACアドレスが分からなくなるから</span></label>
+      <label><input type="radio" name="q2" value="b"><span>自分のLANの外へ出るとき、パケットを渡す出口が分からないから</span></label>
+      <label><input type="radio" name="q2" value="c"><span>サブネットマスクが計算できなくなるから</span></label>
       <p class="q-feedback" aria-live="polite"></p>
     </fieldset>
 
     <fieldset class="q">
       <legend>Q3　Router-2のLAN側IPが192.168.1.254のままだと、何が起こりますか。</legend>
-      <label><input type="radio" name="q3" value="a">LAN2（192.168.2.0）の担当になっておらず、宛先へ引き渡せない</label>
-      <label><input type="radio" name="q3" value="b">WAN回線の速度が落ちる</label>
-      <label><input type="radio" name="q3" value="c">Web ServerのMACアドレスが変わる</label>
+      <label><input type="radio" name="q3" value="a"><span>LAN2（192.168.2.0）の担当になっておらず、宛先へ引き渡せない</span></label>
+      <label><input type="radio" name="q3" value="b"><span>WAN回線の速度が落ちる</span></label>
+      <label><input type="radio" name="q3" value="c"><span>Web ServerのMACアドレスが変わる</span></label>
       <p class="q-feedback" aria-live="polite"></p>
     </fieldset>
 
@@ -158,6 +184,19 @@
 </section>
 
 <footer class="colophon">情報科 授業用シミュレータ　―　実際の機器では経路情報の設定など、ここでは省いた手順もあります。</footer>
+
+<!-- 用語集 -->
+<button type="button" class="glossary-tab" id="btn-glossary" aria-expanded="false" aria-controls="glossary">用語集</button>
+<aside class="glossary" id="glossary" hidden aria-label="用語集">
+  <div class="glossary-head">
+    <h2>用語集</h2>
+    <button type="button" class="btn-ghost" id="btn-glossary-close">閉じる</button>
+  </div>
+  <p class="glossary-note">調べた用語には ✓ が付きます。ふりかえりの記録にも残ります。</p>
+  <div id="glossary-body"></div>
+</aside>
+
+<div class="popover" id="popover" hidden role="dialog" aria-label="用語の説明"></div>
 
 <script src="script.js"></script>
 </body>
